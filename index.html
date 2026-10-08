@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>શ્રી જલારામ પ્રોવિઝન સ્ટોર્સ</title>
+<style>
+body{font-family:Arial,sans-serif;margin:0;background:#f5f5f5}
+header{background:#198754;color:white;padding:15px;text-align:center}
+header h2{margin:5px 0}.container{padding:12px;max-width:700px;margin:auto}
+input,select,button,textarea{width:100%;padding:11px;margin:6px 0;box-sizing:border-box;border:1px solid #ccc;border-radius:6px;font-size:16px}
+.product{background:white;padding:12px;margin:8px 0;border-radius:8px;box-shadow:0 1px 4px #ccc}
+.product b{font-size:18px}.price{color:#198754;font-weight:bold}
+.product button{background:#198754;color:white;border:0}.cart{background:white;padding:12px;margin-top:15px;border-radius:8px}
+.qty{display:flex;align-items:center;gap:5px}.qty button{width:40px;margin:0;padding:7px}
+.whatsapp{background:#25D366;color:white;border:0;font-weight:bold}
+.admin{background:#fff3cd;padding:12px;margin-top:15px;border-radius:8px}
+.adminProduct{background:white;padding:10px;margin:8px 0;border-radius:6px;border:1px solid #ddd}
+</style>
+</head>
+<body>
+<header>
+<h2>🛒 શ્રી જલારામ પ્રોવિઝન સ્ટોર્સ</h2>
+<div>મહુવા રોડ, માર્કેટ યાર્ડ ની ફાટક ની સામે</div>
+<div>જે વી માર્કેટ, સાવર કુંડલા</div>
+<div>📞 8264014784 | 9427276229</div>
+</header>
+<div class="container">
+<h3>🛍️ વસ્તુઓ</h3>
+<input id="search" placeholder="🔍 વસ્તુ શોધો..." oninput="showProducts()">
+<select id="category" onchange="showProducts()">
+<option>બધી</option><option>અનાજ</option><option>દાળ</option><option>તેલ</option><option>મસાલા</option><option>નાસ્તો</option><option>ઘર</option><option>અન્ય</option>
+</select>
+<div id="products"></div>
+<div class="cart">
+<h3>🛒 તમારો કાર્ટ</h3><div id="cart"></div>
+<h3>કુલ: ₹<span id="total">0</span></h3>
+<input id="customerName" placeholder="તમારું નામ">
+<input id="customerMobile" placeholder="મોબાઇલ નંબર">
+<textarea id="address" placeholder="ડિલિવરી સરનામું" style="height:70px"></textarea>
+<button class="whatsapp" onclick="sendWhatsApp()">📲 WhatsApp પર ઓર્ડર મોકલો</button>
+</div>
+<button onclick="openAdmin()">⚙️ Admin Panel</button>
+<div id="adminPanel" class="admin" style="display:none">
+<h3>🔐 Admin Panel</h3><input type="password" id="password" placeholder="Admin Password">
+<button onclick="login()">Login</button>
+<div id="adminArea" style="display:none">
+<h3>➕ નવી વસ્તુ ઉમેરો</h3>
+<input id="newName" placeholder="વસ્તુનું નામ"><input id="newPrice" type="number" placeholder="ભાવ">
+<select id="newCategory"><option>અનાજ</option><option>દાળ</option><option>તેલ</option><option>મસાલા</option><option>નાસ્તો</option><option>ઘર</option><option>અન્ય</option></select>
+<input id="newUnit" placeholder="એકમ જેમ કે 1 કિલો / 1 લિટર">
+<button onclick="addProduct()">➕ વસ્તુ ઉમેરો</button><hr><h3>✏️ વસ્તુ અને ભાવ બદલો</h3><div id="adminProducts"></div>
+</div></div>
+</div>
+<script>
+let products=JSON.parse(localStorage.getItem("products"))||[
+{name:"ચોખા",price:60,category:"અનાજ",unit:"1 કિલો"},{name:"ઘઉંનો લોટ",price:50,category:"અનાજ",unit:"1 કિલો"},{name:"ખાંડ",price:50,category:"અનાજ",unit:"1 કિલો"},
+{name:"તુવેર દાળ",price:120,category:"દાળ",unit:"1 કિલો"},{name:"મગ દાળ",price:110,category:"દાળ",unit:"1 કિલો"},{name:"ચણા દાળ",price:90,category:"દાળ",unit:"1 કિલો"},
+{name:"સિંગતેલ",price:180,category:"તેલ",unit:"1 લિટર"},{name:"રાઈ",price:80,category:"મસાલા",unit:"1 કિલો"},{name:"જીરું",price:300,category:"મસાલા",unit:"1 કિલો"},{name:"હળદર",price:160,category:"મસાલા",unit:"1 કિલો"},
+{name:"ચા",price:250,category:"નાસ્તો",unit:"1 કિલો"},{name:"બિસ્કિટ",price:30,category:"નાસ્તો",unit:"પેકેટ"},{name:"સાબુ",price:35,category:"ઘર",unit:"1 નંગ"},{name:"વોશિંગ પાઉડર",price:70,category:"ઘર",unit:"1 કિલો"},{name:"મેચિસ",price:10,category:"અન્ય",unit:"1 બોક્સ"},{name:"મીઠું",price:25,category:"અન્ય",unit:"1 કિલો"}];
+let cart=[];
+function saveProducts(){localStorage.setItem("products",JSON.stringify(products))}
+function showProducts(){let s=document.getElementById("search").value.toLowerCase(),c=document.getElementById("category").value,html="";products.forEach((p,i)=>{if(p.name.toLowerCase().includes(s)&&(c=="બધી"||p.category==c))html+=`<div class="product"><b>${p.name}</b><br><span class="price">₹${p.price}</span> / ${p.unit}<br><small>${p.category}</small><button onclick="addCart(${i})">🛒 કાર્ટમાં ઉમેરો</button></div>`});document.getElementById("products").innerHTML=html}
+function addCart(i){let f=cart.find(x=>x.index==i);f?f.qty++:cart.push({index:i,qty:1});showCart()}
+function showCart(){let html="",total=0;cart.forEach((x,pos)=>{let p=products[x.index],a=p.price*x.qty;total+=a;html+=`<div class="product"><b>${p.name}</b><br>₹${p.price} × ${x.qty} = ₹${a}<div class="qty"><button onclick="changeQty(${pos},-1)">−</button><span>${x.qty}</span><button onclick="changeQty(${pos},1)">+</button><button onclick="removeCart(${pos})">🗑️</button></div></div>`});document.getElementById("cart").innerHTML=html||"કાર્ટ ખાલી છે";document.getElementById("total").innerText=total}
+function changeQty(i,n){cart[i].qty+=n;if(cart[i].qty<=0)cart.splice(i,1);showCart()}function removeCart(i){cart.splice(i,1);showCart()}
+function sendWhatsApp(){if(!cart.length){alert("પહેલા વસ્તુ કાર્ટમાં ઉમેરો");return}let m="🛒 *શ્રી જલારામ પ્રોવિઝન સ્ટોર્સ ઓર્ડર*%0A%0A";m+="નામ: "+document.getElementById("customerName").value+"%0A";m+="મોબાઇલ: "+document.getElementById("customerMobile").value+"%0A";m+="સરનામું: "+document.getElementById("address").value+"%0A%0A";let t=0;cart.forEach(x=>{let p=products[x.index],a=p.price*x.qty;t+=a;m+=p.name+" - "+x.qty+" × ₹"+p.price+" = ₹"+a+"%0A"});m+="%0A*કુલ બિલ: ₹"+t+"*";window.open("https://wa.me/918264014784?text="+m,"_blank")}
+function openAdmin(){document.getElementById("adminPanel").style.display="block";document.getElementById("adminPanel").scrollIntoView({behavior:"smooth"})}
+function login(){if(document.getElementById("password").value=="1234"){document.getElementById("adminArea").style.display="block";showAdminProducts()}else alert("❌ ખોટો Password")}
+function showAdminProducts(){let h="";products.forEach((p,i)=>{h+=`<div class="adminProduct"><input value="${p.name}" onchange="products[${i}].name=this.value"><input type="number" value="${p.price}" onchange="products[${i}].price=this.value"><select onchange="products[${i}].category=this.value"><option ${p.category=="અનાજ"?"selected":""}>અનાજ</option><option ${p.category=="દાળ"?"selected":""}>દાળ</option><option ${p.category=="તેલ"?"selected":""}>તેલ</option><option ${p.category=="મસાલા"?"selected":""}>મસાલા</option><option ${p.category=="નાસ્તો"?"selected":""}>નાસ્તો</option><option ${p.category=="ઘર"?"selected":""}>ઘર</option><option ${p.category=="અન્ય"?"selected":""}>અન્ય</option></select><input value="${p.unit}" onchange="products[${i}].unit=this.value"><button onclick="saveAdmin(${i})">💾 Save</button><button onclick="deleteProduct(${i})" style="background:#dc3545;color:white">🗑️ Delete</button></div>`});document.getElementById("adminProducts").innerHTML=h}
+function saveAdmin(){saveProducts();showProducts();alert("✅ માહિતી Save થઈ ગઈ")}
+function deleteProduct(i){if(confirm("આ વસ્તુ કાઢી નાખવી છે?")){products.splice(i,1);saveProducts();showAdminProducts();showProducts()}}
+function addProduct(){let n=document.getElementById("newName").value,p=document.getElementById("newPrice").value,c=document.getElementById("newCategory").value,u=document.getElementById("newUnit").value;if(!n||!p||!u){alert("બધી માહિતી ભરો");return}products.push({name:n,price:Number(p),category:c,unit:u});saveProducts();document.getElementById("newName").value="";document.getElementById("newPrice").value="";document.getElementById("newUnit").value="";showAdminProducts();showProducts();alert("✅ નવી વસ્તુ ઉમેરાઈ ગઈ")}
+showProducts();showCart();
+</script>
+</body>
+</html>
